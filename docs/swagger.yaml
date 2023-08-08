@@ -1,0 +1,30 @@
+basePath: /
+info:
+  contact:
+    email: bipinmhr10@gmail.com
+    name: Bipin Maharjan
+  description: This is Go Email Service Build with Go-Fiber and Go-Imap
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  title: Go Email Service API
+  version: "1.0"
+paths:
+  /logout:
+    get:
+      consumes:
+      - application/json
+      description: Logout
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Logout
+      tags:
+      - Auth
+swagger: "2.0"
