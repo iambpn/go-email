@@ -10,11 +10,45 @@ info:
   title: Go Email Service API
   version: "1.0"
 paths:
+  /login:
+    post:
+      consumes:
+      - application/json
+      description: Login API
+      parameters:
+      - default: test@test.com
+        description: email address
+        example: test@test.com
+        in: body
+        name: username
+        required: true
+        schema:
+          type: string
+      - default: password123
+        description: password
+        example: password123
+        in: body
+        name: password
+        required: true
+        schema:
+          type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "404":
+          description: Not Found
+        "500":
+          description: Internal Server Error
+      summary: Login
+      tags:
+      - Auth
   /logout:
     get:
       consumes:
       - application/json
-      description: Logout
+      description: Logout API
       produces:
       - application/json
       responses:
