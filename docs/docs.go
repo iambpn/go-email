@@ -85,6 +85,22 @@ const docTemplate = `{
                 }
             }
         },
+        "/mailbox": {
+            "get": {
+                "description": "get List of Mailboxes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mailbox"
+                ],
+                "summary": "Get list of Mailboxes",
+                "responses": {}
+            }
+        },
         "/message/preview": {
             "get": {
                 "description": "Get All Preview Message",
@@ -98,6 +114,29 @@ const docTemplate = `{
                     "Message"
                 ],
                 "summary": "Get All Preview Message",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mailbox Name",
+                        "name": "mailboxName",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "default": 1,
+                        "description": "Page Number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "number",
+                        "default": 20,
+                        "description": "Page Size",
+                        "name": "pageSize",
+                        "in": "query"
+                    }
+                ],
                 "responses": {}
             }
         }

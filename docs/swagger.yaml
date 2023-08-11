@@ -73,11 +73,38 @@ paths:
       summary: Logout
       tags:
       - Auth
+  /mailbox:
+    get:
+      consumes:
+      - application/json
+      description: get List of Mailboxes
+      produces:
+      - application/json
+      responses: {}
+      summary: Get list of Mailboxes
+      tags:
+      - Mailbox
   /message/preview:
     get:
       consumes:
       - application/json
       description: Get All Preview Message
+      parameters:
+      - description: Mailbox Name
+        in: query
+        name: mailboxName
+        required: true
+        type: string
+      - default: 1
+        description: Page Number
+        in: query
+        name: page
+        type: number
+      - default: 20
+        description: Page Size
+        in: query
+        name: pageSize
+        type: number
       produces:
       - application/json
       responses: {}
