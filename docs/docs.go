@@ -38,25 +38,11 @@ const docTemplate = `{
                 "summary": "Login",
                 "parameters": [
                     {
-                        "default": "test@test.com",
-                        "example": "test@test.com",
-                        "description": "email address",
-                        "name": "username",
+                        "description": "Login Body",
+                        "name": "RequestBody",
                         "in": "body",
-                        "required": true,
                         "schema": {
-                            "type": "string"
-                        }
-                    },
-                    {
-                        "default": "password123",
-                        "example": "password123",
-                        "description": "password",
-                        "name": "password",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "type": "string"
+                            "$ref": "#/definitions/controller.LoginBody"
                         }
                     }
                 ],
@@ -75,6 +61,11 @@ const docTemplate = `{
         },
         "/logout": {
             "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
                 "description": "Logout API",
                 "consumes": [
                     "application/json"
@@ -90,14 +81,43 @@ const docTemplate = `{
                     "200": {
                         "description": "OK"
                     },
-                    "404": {
-                        "description": "Not Found"
+                    "403": {
+                        "description": "Forbidden"
                     },
                     "500": {
                         "description": "Internal Server Error"
                     }
                 }
             }
+        }
+    },
+    "definitions": {
+        "controller.LoginBody": {
+            "type": "object",
+            "required": [
+                "password",
+                "username"
+            ],
+            "properties": {
+                "password": {
+                    "type": "string",
+                    "format": "string",
+                    "example": "password123"
+                },
+                "username": {
+                    "type": "string",
+                    "format": "string",
+                    "example": "test@test.com"
+                }
+            }
+        }
+    },
+    "securityDefinitions": {
+        "ApiKeyAuth": {
+            "description": "Bearer token authorization",
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

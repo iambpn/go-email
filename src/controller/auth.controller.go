@@ -7,16 +7,20 @@ func AuthRouter(router fiber.Router) {
 	router.Get("/logout", logout)
 }
 
-// @summary Login
-// @Description Login API
-// @Tags Auth
-// @Accept json
-// @Produce json
-// @Param username body string true "email address" example(test@test.com) default(test@test.com)
-// @Param password body string true "password" example(password123) default(password123)
-// @Success 200
-// @Failure 500,404
-// @Router /login [post]
+type LoginBody struct {
+	Username string `json:"username" example:"test@test.com" validate:"required" format:"string"`
+	Password string `json:"password" example:"password123" validate:"required" format:"string"`
+}
+
+// @summary		Login
+// @Description	Login API
+// @Tags			Auth
+// @Accept			json
+// @Produce		json
+// @Param			RequestBody	body	LoginBody	false	"Login Body"
+// @Success		200
+// @Failure		500,404
+// @Router			/login [post]
 func login(c *fiber.Ctx) error {
 	return nil
 }
@@ -27,8 +31,9 @@ func login(c *fiber.Ctx) error {
 // @Accept			json
 // @Produce		json
 // @Success		200
-// @Failure		500,404
+// @Failure		500,403
 // @Router			/logout [get]
+// @Security		ApiKeyAuth
 func logout(c *fiber.Ctx) error {
 	return nil
 }

@@ -1,4 +1,19 @@
 basePath: /
+definitions:
+  controller.LoginBody:
+    properties:
+      password:
+        example: password123
+        format: string
+        type: string
+      username:
+        example: test@test.com
+        format: string
+        type: string
+    required:
+    - password
+    - username
+    type: object
 info:
   contact:
     email: bipinmhr10@gmail.com
@@ -16,22 +31,11 @@ paths:
       - application/json
       description: Login API
       parameters:
-      - default: test@test.com
-        description: email address
-        example: test@test.com
+      - description: Login Body
         in: body
-        name: username
-        required: true
+        name: RequestBody
         schema:
-          type: string
-      - default: password123
-        description: password
-        example: password123
-        in: body
-        name: password
-        required: true
-        schema:
-          type: string
+          $ref: '#/definitions/controller.LoginBody'
       produces:
       - application/json
       responses:
@@ -54,11 +58,19 @@ paths:
       responses:
         "200":
           description: OK
-        "404":
-          description: Not Found
+        "403":
+          description: Forbidden
         "500":
           description: Internal Server Error
+      security:
+      - ApiKeyAuth: []
       summary: Logout
       tags:
       - Auth
+securityDefinitions:
+  ApiKeyAuth:
+    description: Bearer token authorization
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

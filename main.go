@@ -12,14 +12,18 @@ import (
 	"github.com/iambpn/go-email/src/controller"
 )
 
-//	@title			Go Email Service API
-//	@version		1.0
-//	@description	This is Go Email Service Build with Go-Fiber and Go-Imap
-//	@contact.name	Bipin Maharjan
-//	@contact.email	bipinmhr10@gmail.com
-//	@license.name	Apache 2.0
-//	@license.url	http://www.apache.org/licenses/LICENSE-2.0.html
-//	@BasePath		/
+// @title						Go Email Service API
+// @version					1.0
+// @description				This is Go Email Service Build with Go-Fiber and Go-Imap
+// @contact.name				Bipin Maharjan
+// @contact.email				bipinmhr10@gmail.com
+// @license.name				Apache 2.0
+// @license.url				http://www.apache.org/licenses/LICENSE-2.0.html
+// @BasePath					/
+// @securityDefinitions.apikey	ApiKeyAuth
+// @in							header
+// @name						Authorization
+// @description				Bearer token authorization
 func main() {
 	// load env
 	config.LoadConfig()
