@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"fmt"
-
 	"github.com/gofiber/fiber/v2"
 	imapwrapper "github.com/iambpn/go-email/pkg/imap_wrapper"
 	imapsession "github.com/iambpn/go-email/src/imapSession"
@@ -66,15 +64,8 @@ func login(c *fiber.Ctx) error {
 // @Router			/auth/logout [get]
 // //@Security		ApiKeyAuth
 func logout(c *fiber.Ctx) error {
-	if imapsession.IW.Host != "" {
-		fmt.Print(imapsession.IW)
-		imapsession.IW.Logout()
-		return c.JSON(fiber.Map{
-			"message": "Logout Successful",
-		})
-	}
-
+	imapsession.IW.Logout()
 	return c.JSON(fiber.Map{
-		"message": "Unable to logout. Imap Wrapper is not initialized.",
+		"message": "Logout Successful",
 	})
 }
