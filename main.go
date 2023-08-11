@@ -20,10 +20,10 @@ import (
 // @license.name				Apache 2.0
 // @license.url				http://www.apache.org/licenses/LICENSE-2.0.html
 // @BasePath					/
-// @securityDefinitions.apikey	ApiKeyAuth
-// @in							header
-// @name						Authorization
-// @description				Bearer token authorization
+// //@securityDefinitions.apikey	ApiKeyAuth
+// //@in							header
+// //@name						Authorization
+// //@description				Bearer token authorization
 func main() {
 	// load env
 	config.LoadConfig()
@@ -44,6 +44,7 @@ func main() {
 	app.Get("/swagger/*", swagger.HandlerDefault)
 
 	controller.AuthRouter(app.Group("/auth"))
+	controller.MessageRouter(app.Group("/message"))
 
 	addr := fmt.Sprintf("%s:%s", config.GetConfig("host", ""), config.GetConfig("port", "3000"))
 	err := app.Listen(addr)

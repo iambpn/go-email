@@ -23,7 +23,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/login": {
+        "/auth/login": {
             "post": {
                 "description": "Login API",
                 "consumes": [
@@ -59,13 +59,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/logout": {
+        "/auth/logout": {
             "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
                 "description": "Logout API",
                 "consumes": [
                     "application/json"
@@ -89,20 +84,46 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/message/preview": {
+            "get": {
+                "description": "Get All Preview Message",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get All Preview Message",
+                "responses": {}
+            }
         }
     },
     "definitions": {
         "controller.LoginBody": {
             "type": "object",
             "required": [
+                "host",
                 "password",
+                "port",
                 "username"
             ],
             "properties": {
+                "host": {
+                    "type": "string",
+                    "example": "outlook.office365.com"
+                },
                 "password": {
                     "type": "string",
                     "format": "string",
-                    "example": "password123"
+                    "example": "password1122"
+                },
+                "port": {
+                    "type": "string",
+                    "example": "993"
                 },
                 "username": {
                     "type": "string",
@@ -110,14 +131,6 @@ const docTemplate = `{
                     "example": "test@test.com"
                 }
             }
-        }
-    },
-    "securityDefinitions": {
-        "ApiKeyAuth": {
-            "description": "Bearer token authorization",
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
         }
     }
 }`

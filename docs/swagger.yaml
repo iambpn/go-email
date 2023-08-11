@@ -2,16 +2,24 @@ basePath: /
 definitions:
   controller.LoginBody:
     properties:
+      host:
+        example: outlook.office365.com
+        type: string
       password:
-        example: password123
+        example: password1122
         format: string
+        type: string
+      port:
+        example: "993"
         type: string
       username:
         example: test@test.com
         format: string
         type: string
     required:
+    - host
     - password
+    - port
     - username
     type: object
 info:
@@ -25,7 +33,7 @@ info:
   title: Go Email Service API
   version: "1.0"
 paths:
-  /login:
+  /auth/login:
     post:
       consumes:
       - application/json
@@ -48,7 +56,7 @@ paths:
       summary: Login
       tags:
       - Auth
-  /logout:
+  /auth/logout:
     get:
       consumes:
       - application/json
@@ -62,15 +70,18 @@ paths:
           description: Forbidden
         "500":
           description: Internal Server Error
-      security:
-      - ApiKeyAuth: []
       summary: Logout
       tags:
       - Auth
-securityDefinitions:
-  ApiKeyAuth:
-    description: Bearer token authorization
-    in: header
-    name: Authorization
-    type: apiKey
+  /message/preview:
+    get:
+      consumes:
+      - application/json
+      description: Get All Preview Message
+      produces:
+      - application/json
+      responses: {}
+      summary: Get All Preview Message
+      tags:
+      - Message
 swagger: "2.0"
