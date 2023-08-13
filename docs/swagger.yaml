@@ -22,6 +22,40 @@ definitions:
     - port
     - username
     type: object
+  controller.UpdateFlagsBody:
+    properties:
+      addFlags:
+        example:
+        - \Seen
+        - \Answered
+        items:
+          enum:
+          - \Seen
+          - \Answered
+          - \Flagged
+          - \Deleted
+          - \Draft
+          - \Recent
+          type: string
+        type: array
+      removeFlags:
+        example:
+        - \Seen
+        - \Answered
+        items:
+          enum:
+          - \Seen
+          - \Answered
+          - \Flagged
+          - \Deleted
+          - \Draft
+          - \Recent
+          type: string
+        type: array
+    required:
+    - addFlags
+    - removeFlags
+    type: object
 info:
   contact:
     email: bipinmhr10@gmail.com
@@ -84,15 +118,13 @@ paths:
       summary: Get list of Mailboxes
       tags:
       - Mailbox
-  /message/preview:
+  /message/{mailbox}:
     get:
-      consumes:
-      - application/json
-      description: Get All Preview Message
+      description: Get All Preview Message in Desc Order
       parameters:
       - description: Mailbox Name
-        in: query
-        name: mailboxName
+        in: path
+        name: mailbox
         required: true
         type: string
       - default: 1
@@ -108,7 +140,52 @@ paths:
       produces:
       - application/json
       responses: {}
-      summary: Get All Preview Message
+      summary: Get All Preview Message in Desc Order
+      tags:
+      - Message
+  /message/{mailbox}/{uid}:
+    get:
+      description: Get Message Details
+      parameters:
+      - description: Mailbox Name
+        in: path
+        name: mailbox
+        required: true
+        type: string
+      - description: Uid Number
+        in: path
+        name: uid
+        required: true
+        type: number
+      produces:
+      - application/json
+      responses: {}
+      summary: Get Message Details
+      tags:
+      - Message
+    put:
+      description: Update Message flags
+      parameters:
+      - description: Mailbox Name
+        in: path
+        name: mailbox
+        required: true
+        type: string
+      - description: Uid Number
+        in: path
+        name: uid
+        required: true
+        type: number
+      - description: Update Body
+        in: body
+        name: updateBody
+        required: true
+        schema:
+          $ref: '#/definitions/controller.UpdateFlagsBody'
+      produces:
+      - application/json
+      responses: {}
+      summary: Update Message flags
       tags:
       - Message
 swagger: "2.0"

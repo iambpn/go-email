@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"time"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/iambpn/go-email/src/config"
 	"github.com/iambpn/go-email/src/controller"
 	"github.com/iambpn/go-email/src/middleware"
+	"github.com/iambpn/go-email/src/utils"
 )
 
 // @title						Go Email Service API
@@ -55,10 +55,5 @@ func main() {
 	controller.MessageRouter(app.Group("/message"))
 	controller.MailBoxRouter(app.Group("/mailbox"))
 
-	addr := fmt.Sprintf("%s:%s", config.GetConfig("host", ""), config.GetConfig("port", "3000"))
-	err := app.Listen(addr)
-
-	if err != nil {
-		log.Fatal(err)
-	}
+	utils.GracefulShutdown(app)
 }

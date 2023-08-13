@@ -101,25 +101,22 @@ const docTemplate = `{
                 "responses": {}
             }
         },
-        "/message/preview": {
+        "/message/{mailbox}": {
             "get": {
-                "description": "Get All Preview Message",
-                "consumes": [
-                    "application/json"
-                ],
+                "description": "Get All Preview Message in Desc Order",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
                     "Message"
                 ],
-                "summary": "Get All Preview Message",
+                "summary": "Get All Preview Message in Desc Order",
                 "parameters": [
                     {
                         "type": "string",
                         "description": "Mailbox Name",
-                        "name": "mailboxName",
-                        "in": "query",
+                        "name": "mailbox",
+                        "in": "path",
                         "required": true
                     },
                     {
@@ -135,6 +132,71 @@ const docTemplate = `{
                         "description": "Page Size",
                         "name": "pageSize",
                         "in": "query"
+                    }
+                ],
+                "responses": {}
+            }
+        },
+        "/message/{mailbox}/{uid}": {
+            "get": {
+                "description": "Get Message Details",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Get Message Details",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mailbox Name",
+                        "name": "mailbox",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Uid Number",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {}
+            },
+            "put": {
+                "description": "Update Message flags",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Message"
+                ],
+                "summary": "Update Message flags",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Mailbox Name",
+                        "name": "mailbox",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "number",
+                        "description": "Uid Number",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Body",
+                        "name": "updateBody",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/controller.UpdateFlagsBody"
+                        }
                     }
                 ],
                 "responses": {}
@@ -168,6 +230,51 @@ const docTemplate = `{
                     "type": "string",
                     "format": "string",
                     "example": "test@test.com"
+                }
+            }
+        },
+        "controller.UpdateFlagsBody": {
+            "type": "object",
+            "required": [
+                "addFlags",
+                "removeFlags"
+            ],
+            "properties": {
+                "addFlags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "\\Seen",
+                            "\\Answered",
+                            "\\Flagged",
+                            "\\Deleted",
+                            "\\Draft",
+                            "\\Recent"
+                        ]
+                    },
+                    "example": [
+                        "\\Seen",
+                        "\\Answered"
+                    ]
+                },
+                "removeFlags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string",
+                        "enum": [
+                            "\\Seen",
+                            "\\Answered",
+                            "\\Flagged",
+                            "\\Deleted",
+                            "\\Draft",
+                            "\\Recent"
+                        ]
+                    },
+                    "example": [
+                        "\\Seen",
+                        "\\Answered"
+                    ]
                 }
             }
         }

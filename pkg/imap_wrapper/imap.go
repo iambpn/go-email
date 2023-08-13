@@ -262,6 +262,47 @@ func (iw *ImapWrapper) GetMessage(mailboxName string, uid uint32) (*IwMessage, e
 	return &iwMessage, nil
 }
 
+func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, flagsToRemove []string) error {
+	seqSet := new(imap.SeqSet)
+	seqSet.AddNum(uid)
+
+	// Fetch the message's current flags
+	messages := make(chan *imap.Message, 1)
+	done := make(chan error, 1)
+	go func() {
+		done <- iw.client.Fetch(seqSet, []imap.FetchItem{imap.FetchFlags}, messages)
+	}()
+
+	var msg *imap.Message
+	select {
+	case msg = <-messages:
+	case err := <-done:
+		return err
+	}
+
+	// Prepare the new set of flags
+	newFlags := make([]string, 0)
+	for _, existingFlag := range msg.Flags {
+		flagMatch := false
+		for _, flagToRemove := range flagsToRemove {
+			if existingFlag == flagToRemove {
+				flagMatch = true
+				break
+			}
+		}
+		if !flagMatch {
+			newFlags = append(newFlags, existingFlag)
+		}
+	}
+	newFlags = append(newFlags, flagsToAdd...)
+
+	if err := iw.client.UidStore(seqSet, imap.StoreItem(imap.SetFlags+".SILENT"), newFlags, nil); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (iw *ImapWrapper) fixPartialMimeMessage(data io.Reader, contentType string, boundary string) (string, error) {
 	strMsg, err := iw.readerToString(data)
 
