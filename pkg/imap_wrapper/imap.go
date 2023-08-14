@@ -11,6 +11,7 @@ import (
 	"github.com/emersion/go-imap/client"
 	mimeParser "github.com/iambpn/go-email/pkg/mime_parser"
 	"github.com/jhillyerd/enmime"
+	orderedmap "github.com/wk8/go-ordered-map/v2"
 )
 
 type ImapWrapper struct {
@@ -142,18 +143,18 @@ func (iw *ImapWrapper) GetPreviewMessages(mailboxName string, page, limit int) (
 		done <- iw.client.Fetch(seqSet, []imap.FetchItem{imap.FetchFlags, imap.FetchInternalDate, imap.FetchRFC822Size, imap.FetchEnvelope, imap.FetchUid}, messagesCh)
 	}()
 
-	iwMessages := map[uint32]*IwPreviewMessage{}
+	iwMessages := orderedmap.New[uint32, *IwPreviewMessage]()
 	availableSeqSet := new(imap.SeqSet)
 
 	for message := range messagesCh {
 		availableSeqSet.AddNum(message.SeqNum)
-		iwMessages[message.SeqNum] = &IwPreviewMessage{
+		iwMessages.Set(message.SeqNum, &IwPreviewMessage{
 			Uid:          message.Uid,
 			Flags:        message.Flags,
 			Envelope:     message.Envelope,
 			MessageSize:  message.Size,
 			InternalDate: message.InternalDate,
-		}
+		})
 	}
 
 	if err := <-done; err != nil {
@@ -190,7 +191,7 @@ func (iw *ImapWrapper) GetPreviewMessages(mailboxName string, page, limit int) (
 
 		mimeParts := mimeParser.ParseEnmimeParts(part)
 
-		if iwMessage, ok := iwMessages[message.SeqNum]; ok {
+		if iwMessage, ok := iwMessages.Get(message.SeqNum); ok {
 			minLen := math.Min(float64(len(mimeParts.Content.Text)), float64(100))
 			iwMessage.PreviewText = mimeParts.Content.Text[:int(minLen)]
 		}
@@ -202,8 +203,8 @@ func (iw *ImapWrapper) GetPreviewMessages(mailboxName string, page, limit int) (
 
 	iwMessagesArr := []IwPreviewMessage{}
 
-	for _, iwMessage := range iwMessages {
-		iwMessagesArr = append(iwMessagesArr, *iwMessage)
+	for pair := iwMessages.Newest(); pair != nil; pair = pair.Next() {
+		iwMessagesArr = append(iwMessagesArr, *pair.Value)
 	}
 
 	return iwMessagesArr, nil
@@ -263,6 +264,12 @@ func (iw *ImapWrapper) GetMessage(mailboxName string, uid uint32) (*IwMessage, e
 }
 
 func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, flagsToRemove []string) error {
+	_, err := iw.client.Select(mailbox, false)
+
+	if err != nil {
+		return err
+	}
+
 	seqSet := new(imap.SeqSet)
 	seqSet.AddNum(uid)
 
@@ -270,18 +277,17 @@ func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, fla
 	messages := make(chan *imap.Message, 1)
 	done := make(chan error, 1)
 	go func() {
-		done <- iw.client.Fetch(seqSet, []imap.FetchItem{imap.FetchFlags}, messages)
+		done <- iw.client.UidFetch(seqSet, []imap.FetchItem{imap.FetchFlags}, messages)
 	}()
 
-	var msg *imap.Message
-	select {
-	case msg = <-messages:
-	case err := <-done:
+	var msg *imap.Message = <-messages
+
+	if err := <-done; err != nil {
 		return err
 	}
 
 	// Prepare the new set of flags
-	newFlags := make([]string, 0)
+	updatedFlags := []string{}
 	for _, existingFlag := range msg.Flags {
 		flagMatch := false
 		for _, flagToRemove := range flagsToRemove {
@@ -291,12 +297,17 @@ func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, fla
 			}
 		}
 		if !flagMatch {
-			newFlags = append(newFlags, existingFlag)
+			updatedFlags = append(updatedFlags, existingFlag)
 		}
 	}
-	newFlags = append(newFlags, flagsToAdd...)
+	updatedFlags = append(updatedFlags, flagsToAdd...)
 
-	if err := iw.client.UidStore(seqSet, imap.StoreItem(imap.SetFlags+".SILENT"), newFlags, nil); err != nil {
+	if len(updatedFlags) <= 0 {
+		updatedFlags = nil
+	}
+
+
+	if err := iw.client.UidStore(seqSet, imap.FormatFlagsOp(imap.SetFlags, true), nil, nil); err != nil {
 		return err
 	}
 
