@@ -306,7 +306,7 @@ func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, fla
 	}
 
 	// Prepare the new set of flags
-	updatedFlags := []interface{}{}
+	updatedFlags := []interface{}{} // must be of interface{} array
 	for _, existingFlag := range msg.Flags {
 		flagMatch := false
 		for _, flagToRemove := range flagsToRemove {
