@@ -115,22 +115,41 @@ func (iw *ImapWrapper) GetMailBoxes() ([]IwMailbox, error) {
 	return iwMailboxes, nil
 }
 
+type PreviewMessageResponse struct {
+	Data         *[]IwPreviewMessage
+	TotalMessage uint32
+}
+
 /*
 - Retrieve IMAP preview messages in descending order
 */
-func (iw *ImapWrapper) GetPreviewMessages(mailboxName string, page, limit int) ([]IwPreviewMessage, error) {
+func (iw *ImapWrapper) GetPreviewMessages(mailboxName string, page, limit int) (*PreviewMessageResponse, error) {
 	mStatus, err := iw.client.Select(mailboxName, true)
 
 	if err != nil {
 		return nil, err
 	}
 
-	to := uint32(1)
-	from := uint32(1)
+	from := mStatus.Messages - uint32(page*limit)
+	to := from + uint32(limit)
 
-	if mStatus.Messages > uint32(page*limit) {
-		from = mStatus.Messages - uint32(page*limit)
-		to = from + uint32(limit)
+	if mStatus.Messages < uint32(page*limit) {
+		max := uint32(page * limit)
+		extra := max - mStatus.Messages
+
+		to = mStatus.Messages
+		if extra > uint32(limit) {
+			from = mStatus.Messages
+		} else {
+			from = (uint32(page) - 1) * uint32(limit)
+		}
+	}
+
+	if mStatus.Messages == from && mStatus.Messages == to {
+		return &PreviewMessageResponse{
+			Data:         &[]IwPreviewMessage{},
+			TotalMessage: mStatus.Messages,
+		}, nil
 	}
 
 	seqSet := new(imap.SeqSet)
@@ -203,11 +222,11 @@ func (iw *ImapWrapper) GetPreviewMessages(mailboxName string, page, limit int) (
 
 	iwMessagesArr := []IwPreviewMessage{}
 
-	for pair := iwMessages.Newest(); pair != nil; pair = pair.Next() {
+	for pair := iwMessages.Newest(); pair != nil; pair = pair.Prev() {
 		iwMessagesArr = append(iwMessagesArr, *pair.Value)
 	}
 
-	return iwMessagesArr, nil
+	return &PreviewMessageResponse{Data: &iwMessagesArr, TotalMessage: mStatus.Messages}, nil
 }
 
 func (iw *ImapWrapper) GetMessage(mailboxName string, uid uint32) (*IwMessage, error) {
@@ -287,7 +306,7 @@ func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, fla
 	}
 
 	// Prepare the new set of flags
-	updatedFlags := []string{}
+	updatedFlags := []interface{}{}
 	for _, existingFlag := range msg.Flags {
 		flagMatch := false
 		for _, flagToRemove := range flagsToRemove {
@@ -300,14 +319,16 @@ func (iw *ImapWrapper) UpdateMessage(mailbox string, uid uint32, flagsToAdd, fla
 			updatedFlags = append(updatedFlags, existingFlag)
 		}
 	}
-	updatedFlags = append(updatedFlags, flagsToAdd...)
+
+	for _, flag := range flagsToAdd {
+		updatedFlags = append(updatedFlags, flag)
+	}
 
 	if len(updatedFlags) <= 0 {
 		updatedFlags = nil
 	}
 
-
-	if err := iw.client.UidStore(seqSet, imap.FormatFlagsOp(imap.SetFlags, true), nil, nil); err != nil {
+	if err := iw.client.UidStore(seqSet, imap.FormatFlagsOp(imap.SetFlags, true), updatedFlags, nil); err != nil {
 		return err
 	}
 
